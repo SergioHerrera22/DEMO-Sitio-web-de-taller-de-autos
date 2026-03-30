@@ -16,6 +16,8 @@ import { toast } from "sonner";
 import { sync } from "../../services/syncEngine";
 import { HelpGuide } from "./HelpGuide";
 import { WelcomeBanner } from "./WelcomeBanner";
+import { OnboardingGuide, useOnboardingGuide } from "./OnboardingGuide";
+import { BookOpen } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -29,6 +31,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+  const { open: guideOpen, show: showGuide, close: closeGuide } = useOnboardingGuide();
 
   const isActive = (path: string) => {
     return location.pathname === path;
@@ -140,6 +143,18 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 </Sheet>
               </div>
 
+              {/* Tour Button */}
+              <Button
+                variant="ghost"
+                size="sm"
+                className="gap-2"
+                onClick={showGuide}
+                title="Ver guía de uso"
+              >
+                <BookOpen className="h-4 w-4" />
+                <span className="hidden sm:inline">Tour</span>
+              </Button>
+
               {/* Help Button */}
               <HelpGuide />
 
@@ -161,6 +176,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </div>
         </div>
       </nav>
+      <OnboardingGuide open={guideOpen} onClose={closeGuide} />
       <WelcomeBanner />
       <main className="max-w-7xl mx-auto py-4 sm:py-6 px-4 sm:px-6 lg:px-8">
         {children}
