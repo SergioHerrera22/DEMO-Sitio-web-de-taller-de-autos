@@ -16,8 +16,8 @@ export function DescriptionSection(props: {
         value={descripcion}
         onChange={(e) => onChange(e.target.value)}
         className="min-h-24"
+        data-tour="order-form-descripcion"
       />
     </div>
   );
 }
-

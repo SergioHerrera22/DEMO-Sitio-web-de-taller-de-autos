@@ -294,6 +294,7 @@ export function AccountsLedger() {
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
+                  data-tour="cuentas-search-input"
                 />
               </div>
             </div>
@@ -320,6 +321,7 @@ export function AccountsLedger() {
                 setShowCuentaDialog(true);
               }}
               className="gap-2"
+              data-tour="cuentas-new-btn"
             >
               <Plus className="h-4 w-4" />
               Nueva Cuenta
@@ -458,6 +460,7 @@ export function AccountsLedger() {
                 onChange={(e) =>
                   setFormData({ ...formData, entidad: e.target.value })
                 }
+                data-tour="cuentas-form-entidad"
               />
             </div>
 
@@ -510,7 +513,7 @@ export function AccountsLedger() {
             >
               Cancelar
             </Button>
-            <Button onClick={handleSaveCuenta}>
+            <Button onClick={handleSaveCuenta} data-tour="cuentas-form-submit">
               {editingCuenta ? "Actualizar" : "Crear"} Cuenta
             </Button>
           </DialogFooter>

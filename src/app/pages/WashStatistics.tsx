@@ -123,7 +123,7 @@ export function WashStatistics() {
 
       {/* Tarjetas principales */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
+        <Card data-tour="lavados-stat-card">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               <Droplets className="h-4 w-4 text-blue-500" />

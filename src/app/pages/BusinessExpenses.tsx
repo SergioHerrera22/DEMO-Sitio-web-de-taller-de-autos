@@ -44,7 +44,6 @@ import {
 } from "lucide-react";
 
 import { toast } from "sonner";
-import { Layout } from "../components/Layout";
 import { sync } from "../../services/syncEngine";
 
 import {
@@ -251,7 +250,10 @@ export function BusinessExpenses() {
       monthlyExpenses.reduce((sum, expense) => sum + expense.total, 0) +
       monthlyProviderExpenses.reduce((sum, gasto) => sum + gasto.total, 0) +
       // Cheques imputados a proveedores/cuentas corrientes (pago) cuentan como egreso
-      monthlyChequesImputadosProveedores.reduce((sum, cheque) => sum + cheque.monto, 0);
+      monthlyChequesImputadosProveedores.reduce(
+        (sum, cheque) => sum + cheque.monto,
+        0,
+      );
 
     const totalIvaVentas = monthlyOrdenes.reduce((sum, orden) => {
       const iva = orden.monto - orden.monto / 1.21;
@@ -310,6 +312,7 @@ export function BusinessExpenses() {
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  data-tour="finanzas-password-input"
                 />
 
                 <button
@@ -321,7 +324,12 @@ export function BusinessExpenses() {
                 </button>
               </div>
 
-              <Button onClick={handlePasswordSubmit}>Acceder</Button>
+              <Button
+                onClick={handlePasswordSubmit}
+                data-tour="finanzas-access-btn"
+              >
+                Acceder
+              </Button>
             </div>
           </DialogContent>
         </Dialog>
@@ -330,509 +338,218 @@ export function BusinessExpenses() {
   }
 
   return (
-    <Layout>
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
-        <div className="max-w-7xl mx-auto space-y-6">
-          {/* Header */}
-          <div className="text-center">
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">
-              💰 Gestión Financiera del Taller
-            </h1>
-            <p className="text-gray-600">
-              Reporte mensual de ingresos, egresos y deudas
-            </p>
-          </div>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="text-center">
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">
+            💰 Gestión Financiera del Taller
+          </h1>
+          <p className="text-gray-600">
+            Reporte mensual de ingresos, egresos y deudas
+          </p>
+        </div>
 
-          {/* Month Selector */}
-          <Card className="bg-white/80 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Calendar className="h-5 w-5" />
-                Seleccionar Mes
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex gap-4 items-end">
-                <div>
-                  <Input
-                    type="month"
-                    value={selectedMonth}
-                    onChange={(e) => setSelectedMonth(e.target.value)}
-                    className="max-w-xs"
-                  />
+        {/* Month Selector */}
+        <Card className="bg-white/80 backdrop-blur-sm">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Calendar className="h-5 w-5" />
+              Seleccionar Mes
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex gap-4 items-end">
+              <div>
+                <Input
+                  type="month"
+                  value={selectedMonth}
+                  onChange={(e) => setSelectedMonth(e.target.value)}
+                  className="max-w-xs"
+                  data-tour="finanzas-month-input"
+                />
+              </div>
+              <Button
+                onClick={reloadData}
+                variant="outline"
+                size="sm"
+                className="gap-2"
+              >
+                <RefreshCw className="h-4 w-4" />
+                Actualizar Datos
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Estado de sincronización */}
+        <Card className="bg-white/80 backdrop-blur-sm">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2">
+              <RefreshCw
+                className={`h-5 w-5 ${isSyncingNow ? "animate-spin" : ""}`}
+              />
+              Estado de sincronización
+            </CardTitle>
+            <CardDescription>
+              Cola pendiente: {outboxPendingCount} operación
+              {outboxPendingCount !== 1 ? "es" : ""}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div className="space-y-1 text-sm">
+                <div className="text-gray-700">
+                  <span className="font-medium">Última sincronización OK:</span>{" "}
+                  {lastSyncOkAt
+                    ? new Date(lastSyncOkAt).toLocaleString("es-AR")
+                    : "—"}
                 </div>
+                <div className="text-gray-700">
+                  <span className="font-medium">Último error:</span>{" "}
+                  {lastSyncError ? lastSyncError : "—"}
+                </div>
+                {lastSyncErrorAt && (
+                  <div className="text-gray-500 text-xs">
+                    {new Date(lastSyncErrorAt).toLocaleString("es-AR")}
+                  </div>
+                )}
+              </div>
+
+              <div className="flex gap-2">
                 <Button
-                  onClick={reloadData}
+                  onClick={handleRetrySync}
                   variant="outline"
                   size="sm"
                   className="gap-2"
+                  disabled={isSyncingNow}
                 >
-                  <RefreshCw className="h-4 w-4" />
-                  Actualizar Datos
+                  <RefreshCw
+                    className={`h-4 w-4 ${isSyncingNow ? "animate-spin" : ""}`}
+                  />
+                  Reintentar sincronización
                 </Button>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </CardContent>
+        </Card>
 
-          {/* Estado de sincronización */}
-          <Card className="bg-white/80 backdrop-blur-sm">
+        {/* Summary Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <Card className="bg-gradient-to-br from-green-500 to-green-600 text-white">
             <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2">
-                <RefreshCw className={`h-5 w-5 ${isSyncingNow ? "animate-spin" : ""}`} />
-                Estado de sincronización
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <TrendingUp className="h-4 w-4" />
+                Ingresos del Mes
               </CardTitle>
-              <CardDescription>
-                Cola pendiente: {outboxPendingCount} operación
-                {outboxPendingCount !== 1 ? "es" : ""}
-              </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <div className="space-y-1 text-sm">
-                  <div className="text-gray-700">
-                    <span className="font-medium">Última sincronización OK:</span>{" "}
-                    {lastSyncOkAt
-                      ? new Date(lastSyncOkAt).toLocaleString("es-AR")
-                      : "—"}
-                  </div>
-                  <div className="text-gray-700">
-                    <span className="font-medium">Último error:</span>{" "}
-                    {lastSyncError ? lastSyncError : "—"}
-                  </div>
-                  {lastSyncErrorAt && (
-                    <div className="text-gray-500 text-xs">
-                      {new Date(lastSyncErrorAt).toLocaleString("es-AR")}
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex gap-2">
-                  <Button
-                    onClick={handleRetrySync}
-                    variant="outline"
-                    size="sm"
-                    className="gap-2"
-                    disabled={isSyncingNow}
-                  >
-                    <RefreshCw className={`h-4 w-4 ${isSyncingNow ? "animate-spin" : ""}`} />
-                    Reintentar sincronización
-                  </Button>
-                </div>
+              <div className="text-2xl font-bold">
+                $
+                {(
+                  monthlyData.totalIngresos + monthlyData.totalIngresosCheques
+                ).toFixed(2)}
               </div>
+              <p className="text-xs opacity-90">
+                {monthlyData.ordenes.length} órdenes facturadas
+                {monthlyData.chequesImputadosClientes.length > 0 &&
+                  ` + ${monthlyData.chequesImputadosClientes.length} cheque${monthlyData.chequesImputadosClientes.length !== 1 ? "s" : ""} imputado${monthlyData.chequesImputadosClientes.length !== 1 ? "s" : ""} (clientes)`}
+              </p>
             </CardContent>
           </Card>
 
-          {/* Summary Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card className="bg-gradient-to-br from-green-500 to-green-600 text-white">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium flex items-center gap-2">
-                  <TrendingUp className="h-4 w-4" />
-                  Ingresos del Mes
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  $
-                  {(
-                    monthlyData.totalIngresos + monthlyData.totalIngresosCheques
-                  ).toFixed(2)}
-                </div>
-                <p className="text-xs opacity-90">
-                  {monthlyData.ordenes.length} órdenes facturadas
-                  {monthlyData.chequesImputadosClientes.length > 0 &&
-                    ` + ${monthlyData.chequesImputadosClientes.length} cheque${monthlyData.chequesImputadosClientes.length !== 1 ? "s" : ""} imputado${monthlyData.chequesImputadosClientes.length !== 1 ? "s" : ""} (clientes)`}
-                </p>
-              </CardContent>
-            </Card>
+          <Card className="bg-gradient-to-br from-red-500 to-red-600 text-white">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <TrendingDown className="h-4 w-4" />
+                Egresos del Mes
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                ${monthlyData.totalEgresos.toFixed(2)}
+              </div>
+              <p className="text-xs opacity-90">
+                {monthlyData.expenses.length} gastos registrados
+              </p>
+            </CardContent>
+          </Card>
 
-            <Card className="bg-gradient-to-br from-red-500 to-red-600 text-white">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium flex items-center gap-2">
-                  <TrendingDown className="h-4 w-4" />
-                  Egresos del Mes
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  ${monthlyData.totalEgresos.toFixed(2)}
-                </div>
-                <p className="text-xs opacity-90">
-                  {monthlyData.expenses.length} gastos registrados
-                </p>
-              </CardContent>
-            </Card>
+          <Card className="bg-gradient-to-br from-orange-500 to-orange-600 text-white">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <Users className="h-4 w-4" />
+                Clientes Deudores
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                ${monthlyData.totalDeudores.toFixed(2)}
+              </div>
+              <p className="text-xs opacity-90">
+                {monthlyData.clientesUnicosConDeuda.length} cliente
+                {monthlyData.clientesUnicosConDeuda.length !== 1 ? "s" : ""} con
+                deuda
+                {monthlyData.clientesUnicosConDeuda.length !== 1 ? "s" : ""}
+              </p>
+            </CardContent>
+          </Card>
 
-            <Card className="bg-gradient-to-br from-orange-500 to-orange-600 text-white">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium flex items-center gap-2">
-                  <Users className="h-4 w-4" />
-                  Clientes Deudores
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  ${monthlyData.totalDeudores.toFixed(2)}
-                </div>
-                <p className="text-xs opacity-90">
-                  {monthlyData.clientesUnicosConDeuda.length} cliente
-                  {monthlyData.clientesUnicosConDeuda.length !== 1
-                    ? "s"
-                    : ""}{" "}
-                  con deuda
-                  {monthlyData.clientesUnicosConDeuda.length !== 1 ? "s" : ""}
-                </p>
-              </CardContent>
-            </Card>
+          <Card
+            className={`bg-gradient-to-br text-white ${
+              monthlyData.balance >= 0
+                ? "from-blue-500 to-blue-600"
+                : "from-purple-500 to-purple-600"
+            }`}
+          >
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <DollarSign className="h-4 w-4" />
+                Balance del Mes
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                ${monthlyData.balance.toFixed(2)}
+              </div>
+              <p className="text-xs opacity-90">
+                {monthlyData.balance >= 0 ? "Superávit" : "Déficit"}
+              </p>
+            </CardContent>
+          </Card>
+        </div>
 
-            <Card
-              className={`bg-gradient-to-br text-white ${
-                monthlyData.balance >= 0
-                  ? "from-blue-500 to-blue-600"
-                  : "from-purple-500 to-purple-600"
-              }`}
-            >
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium flex items-center gap-2">
-                  <DollarSign className="h-4 w-4" />
-                  Balance del Mes
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  ${monthlyData.balance.toFixed(2)}
-                </div>
-                <p className="text-xs opacity-90">
-                  {monthlyData.balance >= 0 ? "Superávit" : "Déficit"}
-                </p>
-              </CardContent>
-            </Card>
-          </div>
+        {/* Reporte IVA */}
+        <div className="grid grid-cols-1 gap-6">
+          <Card className="bg-white/80 backdrop-blur-sm">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <Receipt className="h-4 w-4 text-green-600" />
+                IVA Ventas (Órdenes de Trabajo)
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-green-700">
+                ${monthlyData.totalIvaVentas.toFixed(2)}
+              </div>
+              <p className="text-xs text-gray-500">
+                Total de IVA incluido en lo facturado de OT (21%)
+              </p>
+            </CardContent>
+          </Card>
+        </div>
 
-          {/* Reporte IVA */}
-          <div className="grid grid-cols-1 gap-6">
-            <Card className="bg-white/80 backdrop-blur-sm">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium flex items-center gap-2">
-                  <Receipt className="h-4 w-4 text-green-600" />
-                  IVA Ventas (Órdenes de Trabajo)
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-green-700">
-                  ${monthlyData.totalIvaVentas.toFixed(2)}
-                </div>
-                <p className="text-xs text-gray-500">
-                  Total de IVA incluido en lo facturado de OT (21%)
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Detailed Tables */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Ingresos - Órdenes de Trabajo */}
-            <Card className="bg-white/80 backdrop-blur-sm">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5 text-green-600" />
-                  Ingresos - Órdenes Facturadas
-                </CardTitle>
-                <CardDescription>
-                  Trabajo realizado y cobrado en{" "}
-                  {new Date(selectedMonth + "-01").toLocaleDateString("es-AR", {
-                    month: "long",
-                    year: "numeric",
-                  })}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Fecha</TableHead>
-                        <TableHead>Cliente</TableHead>
-                        <TableHead>Descripción</TableHead>
-                        <TableHead className="text-right">Monto</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {monthlyData.ordenes.length > 0 ? (
-                        monthlyData.ordenes.map((orden) => (
-                          <TableRow key={orden.id}>
-                            <TableCell className="text-sm">
-                              {new Date(orden.fecha).toLocaleDateString(
-                                "es-AR",
-                              )}
-                            </TableCell>
-                            <TableCell className="font-medium">
-                              {orden.cliente}
-                            </TableCell>
-                            <TableCell
-                              className="max-w-xs truncate"
-                              title={orden.descripcion}
-                            >
-                              {orden.descripcion}
-                            </TableCell>
-                            <TableCell className="text-right font-semibold text-green-600">
-                              ${orden.monto.toFixed(2)}
-                            </TableCell>
-                          </TableRow>
-                        ))
-                      ) : (
-                        <TableRow>
-                          <TableCell
-                            colSpan={4}
-                            className="text-center py-8 text-gray-500"
-                          >
-                            No hay órdenes facturadas en este mes
-                          </TableCell>
-                        </TableRow>
-                      )}
-                    </TableBody>
-                  </Table>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Egresos - Gastos */}
-            <Card className="bg-white/80 backdrop-blur-sm">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <TrendingDown className="h-5 w-5 text-red-600" />
-                  Egresos - Gastos Registrados
-                </CardTitle>
-                <CardDescription>
-                  Gastos realizados en{" "}
-                  {new Date(selectedMonth + "-01").toLocaleDateString("es-AR", {
-                    month: "long",
-                    year: "numeric",
-                  })}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Fecha</TableHead>
-                        <TableHead>Categoría</TableHead>
-                        <TableHead>Descripción</TableHead>
-                        <TableHead className="text-right">Total</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {/* Gastos normales */}
-                      {monthlyData.expenses.map((expense) => (
-                        <TableRow key={expense.id}>
-                          <TableCell className="text-sm">
-                            {new Date(expense.fecha).toLocaleDateString(
-                              "es-AR",
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            <span className="px-2 py-1 bg-gray-100 rounded-full text-xs">
-                              {expense.categoria}
-                            </span>
-                          </TableCell>
-                          <TableCell
-                            className="max-w-xs truncate"
-                            title={expense.descripcion}
-                          >
-                            {expense.descripcion}
-                          </TableCell>
-                          <TableCell className="text-right font-semibold text-red-600">
-                            ${expense.total.toFixed(2)}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                      {/* Gastos de proveedores */}
-                      {monthlyData.providerExpenses.map((gasto) => (
-                        <TableRow key={`${gasto.cuentaId}-${gasto.id}`}>
-                          <TableCell className="text-sm">
-                            {new Date(gasto.fecha).toLocaleDateString("es-AR")}
-                          </TableCell>
-                          <TableCell>
-                            <span className="px-2 py-1 bg-red-100 rounded-full text-xs">
-                              Proveedor
-                            </span>
-                          </TableCell>
-                          <TableCell
-                            className="max-w-xs truncate"
-                            title={gasto.detalleProducto}
-                          >
-                            <div className="flex flex-col">
-                              <span>{gasto.detalleProducto}</span>
-                              <span className="text-xs text-gray-500">
-                                {gasto.entidad}
-                              </span>
-                            </div>
-                          </TableCell>
-                          <TableCell
-                            className={`text-right font-semibold ${
-                              gasto.cuentaSaldo >= 0
-                                ? "text-green-600"
-                                : "text-red-600"
-                            }`}
-                            title={
-                              gasto.cuentaSaldo >= 0
-                                ? "Saldado"
-                                : "Pendiente (saldo proveedor negativo)"
-                            }
-                          >
-                            ${gasto.total.toFixed(2)}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                      {/* Si no hay gastos */}
-                      {monthlyData.expenses.length === 0 &&
-                        monthlyData.providerExpenses.length === 0 && (
-                          <TableRow>
-                            <TableCell
-                              colSpan={4}
-                              className="text-center py-8 text-gray-500"
-                            >
-                              No hay gastos registrados en este mes
-                            </TableCell>
-                          </TableRow>
-                        )}
-                    </TableBody>
-                  </Table>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Cheques Imputados (Clientes) */}
-          {monthlyData.chequesImputadosClientes.length > 0 && (
-            <Card className="bg-white/80 backdrop-blur-sm">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Receipt className="h-5 w-5 text-purple-600" />
-                  Cheques Imputados (Clientes)
-                </CardTitle>
-                <CardDescription>
-                  Cheques utilizados para saldar deudas de clientes en{" "}
-                  {new Date(selectedMonth + "-01").toLocaleDateString("es-AR", {
-                    month: "long",
-                    year: "numeric",
-                  })}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Fecha Imputación</TableHead>
-                        <TableHead>Número</TableHead>
-                        <TableHead>Cliente</TableHead>
-                        <TableHead>Emisor</TableHead>
-                        <TableHead className="text-right">Monto</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {monthlyData.chequesImputadosClientes.map((cheque) => {
-                        // Buscar el cliente correspondiente por clienteId
-                        const clienteCorrespondiente = vehicles.find(
-                          (v) => v.id === cheque.clienteId,
-                        );
-                        return (
-                          <TableRow key={cheque.id}>
-                            <TableCell className="text-sm">
-                              {cheque.fechaImputacion
-                                ? new Date(
-                                    cheque.fechaImputacion,
-                                  ).toLocaleDateString("es-AR")
-                                : "—"}
-                            </TableCell>
-                            <TableCell className="font-medium">
-                              {cheque.numero || "—"}
-                            </TableCell>
-                            <TableCell>
-                              {clienteCorrespondiente
-                                ? clienteCorrespondiente.cliente
-                                : "Cliente no encontrado"}
-                            </TableCell>
-                            <TableCell>{cheque.emisor}</TableCell>
-                            <TableCell className="text-right font-semibold text-purple-600">
-                              ${cheque.monto.toFixed(2)}
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })}
-                    </TableBody>
-                  </Table>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Cheques Imputados (Proveedores / Cuentas Corrientes) */}
-          {monthlyData.chequesImputadosProveedores.length > 0 && (
-            <Card className="bg-white/80 backdrop-blur-sm">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Receipt className="h-5 w-5 text-blue-600" />
-                  Cheques Imputados (Proveedores)
-                </CardTitle>
-                <CardDescription>
-                  Cheques utilizados para saldar cuentas corrientes en{" "}
-                  {new Date(selectedMonth + "-01").toLocaleDateString("es-AR", {
-                    month: "long",
-                    year: "numeric",
-                  })}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Fecha Imputación</TableHead>
-                        <TableHead>Número</TableHead>
-                        <TableHead>Destino</TableHead>
-                        <TableHead>Emisor</TableHead>
-                        <TableHead className="text-right">Monto</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {monthlyData.chequesImputadosProveedores.map((cheque) => (
-                        <TableRow key={cheque.id}>
-                          <TableCell className="text-sm">
-                            {cheque.fechaImputacion
-                              ? new Date(cheque.fechaImputacion).toLocaleDateString(
-                                  "es-AR",
-                                )
-                              : "—"}
-                          </TableCell>
-                          <TableCell className="font-medium">
-                            {cheque.numero || "—"}
-                          </TableCell>
-                          <TableCell>{cheque.destino || "Cuenta Corriente"}</TableCell>
-                          <TableCell>{cheque.emisor}</TableCell>
-                          <TableCell className="text-right font-semibold text-blue-600">
-                            ${cheque.monto.toFixed(2)}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Clientes Deudores */}
+        {/* Detailed Tables */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Ingresos - Órdenes de Trabajo */}
           <Card className="bg-white/80 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5 text-orange-600" />
-                Clientes Deudores
+                <TrendingUp className="h-5 w-5 text-green-600" />
+                Ingresos - Órdenes Facturadas
               </CardTitle>
               <CardDescription>
-                Clientes que tienen saldo pendiente por pagar en{" "}
+                Trabajo realizado y cobrado en{" "}
                 {new Date(selectedMonth + "-01").toLocaleDateString("es-AR", {
                   month: "long",
                   year: "numeric",
@@ -844,53 +561,40 @@ export function BusinessExpenses() {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead>Fecha</TableHead>
                       <TableHead>Cliente</TableHead>
-                      <TableHead>Teléfono</TableHead>
-                      <TableHead>Patente</TableHead>
-                      <TableHead className="text-right">Deuda</TableHead>
-                      <TableHead className="text-center">Acciones</TableHead>
+                      <TableHead>Descripción</TableHead>
+                      <TableHead className="text-right">Monto</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {monthlyData.deudores.length > 0 ? (
-                      monthlyData.deudores.map((orden) => (
+                    {monthlyData.ordenes.length > 0 ? (
+                      monthlyData.ordenes.map((orden) => (
                         <TableRow key={orden.id}>
+                          <TableCell className="text-sm">
+                            {new Date(orden.fecha).toLocaleDateString("es-AR")}
+                          </TableCell>
                           <TableCell className="font-medium">
                             {orden.cliente}
                           </TableCell>
-                          <TableCell>
-                            {orden.telefono || "Sin teléfono"}
+                          <TableCell
+                            className="max-w-xs truncate"
+                            title={orden.descripcion}
+                          >
+                            {orden.descripcion}
                           </TableCell>
-                          <TableCell>{orden.patente}</TableCell>
-                          <TableCell className="text-right font-semibold text-red-600">
-                            ${orden.saldoPendiente.toFixed(2)}
-                          </TableCell>
-                          <TableCell className="text-center">
-                            {orden.telefono && (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => {
-                                  const mensaje = `Hola ${orden.cliente}, le recordamos que tiene un saldo pendiente de $${orden.saldoPendiente.toFixed(2)} por la orden ${orden.numeroOT} del vehículo ${orden.patente}.`;
-                                  const url = `https://wa.me/549${orden.telefono!.replace(/\D/g, "")}?text=${encodeURIComponent(mensaje)}`;
-                                  window.open(url, "_blank");
-                                }}
-                                className="gap-1"
-                              >
-                                <MessageCircle className="h-4 w-4" />
-                                WhatsApp
-                              </Button>
-                            )}
+                          <TableCell className="text-right font-semibold text-green-600">
+                            ${orden.monto.toFixed(2)}
                           </TableCell>
                         </TableRow>
                       ))
                     ) : (
                       <TableRow>
                         <TableCell
-                          colSpan={5}
+                          colSpan={4}
                           className="text-center py-8 text-gray-500"
                         >
-                          No hay clientes con deudas pendientes
+                          No hay órdenes facturadas en este mes
                         </TableCell>
                       </TableRow>
                     )}
@@ -900,13 +604,316 @@ export function BusinessExpenses() {
             </CardContent>
           </Card>
 
-          {/* Footer */}
-          <div className="text-center text-gray-500 text-sm">
-            <p>💼 Información financiera confidencial - Taller de Autos</p>
-            <p>Reporte generado el {new Date().toLocaleDateString("es-AR")}</p>
-          </div>
+          {/* Egresos - Gastos */}
+          <Card className="bg-white/80 backdrop-blur-sm">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingDown className="h-5 w-5 text-red-600" />
+                Egresos - Gastos Registrados
+              </CardTitle>
+              <CardDescription>
+                Gastos realizados en{" "}
+                {new Date(selectedMonth + "-01").toLocaleDateString("es-AR", {
+                  month: "long",
+                  year: "numeric",
+                })}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Fecha</TableHead>
+                      <TableHead>Categoría</TableHead>
+                      <TableHead>Descripción</TableHead>
+                      <TableHead className="text-right">Total</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {/* Gastos normales */}
+                    {monthlyData.expenses.map((expense) => (
+                      <TableRow key={expense.id}>
+                        <TableCell className="text-sm">
+                          {new Date(expense.fecha).toLocaleDateString("es-AR")}
+                        </TableCell>
+                        <TableCell>
+                          <span className="px-2 py-1 bg-gray-100 rounded-full text-xs">
+                            {expense.categoria}
+                          </span>
+                        </TableCell>
+                        <TableCell
+                          className="max-w-xs truncate"
+                          title={expense.descripcion}
+                        >
+                          {expense.descripcion}
+                        </TableCell>
+                        <TableCell className="text-right font-semibold text-red-600">
+                          ${expense.total.toFixed(2)}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                    {/* Gastos de proveedores */}
+                    {monthlyData.providerExpenses.map((gasto) => (
+                      <TableRow key={`${gasto.cuentaId}-${gasto.id}`}>
+                        <TableCell className="text-sm">
+                          {new Date(gasto.fecha).toLocaleDateString("es-AR")}
+                        </TableCell>
+                        <TableCell>
+                          <span className="px-2 py-1 bg-red-100 rounded-full text-xs">
+                            Proveedor
+                          </span>
+                        </TableCell>
+                        <TableCell
+                          className="max-w-xs truncate"
+                          title={gasto.detalleProducto}
+                        >
+                          <div className="flex flex-col">
+                            <span>{gasto.detalleProducto}</span>
+                            <span className="text-xs text-gray-500">
+                              {gasto.entidad}
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell
+                          className={`text-right font-semibold ${
+                            gasto.cuentaSaldo >= 0
+                              ? "text-green-600"
+                              : "text-red-600"
+                          }`}
+                          title={
+                            gasto.cuentaSaldo >= 0
+                              ? "Saldado"
+                              : "Pendiente (saldo proveedor negativo)"
+                          }
+                        >
+                          ${gasto.total.toFixed(2)}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                    {/* Si no hay gastos */}
+                    {monthlyData.expenses.length === 0 &&
+                      monthlyData.providerExpenses.length === 0 && (
+                        <TableRow>
+                          <TableCell
+                            colSpan={4}
+                            className="text-center py-8 text-gray-500"
+                          >
+                            No hay gastos registrados en este mes
+                          </TableCell>
+                        </TableRow>
+                      )}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Cheques Imputados (Clientes) */}
+        {monthlyData.chequesImputadosClientes.length > 0 && (
+          <Card className="bg-white/80 backdrop-blur-sm">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Receipt className="h-5 w-5 text-purple-600" />
+                Cheques Imputados (Clientes)
+              </CardTitle>
+              <CardDescription>
+                Cheques utilizados para saldar deudas de clientes en{" "}
+                {new Date(selectedMonth + "-01").toLocaleDateString("es-AR", {
+                  month: "long",
+                  year: "numeric",
+                })}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Fecha Imputación</TableHead>
+                      <TableHead>Número</TableHead>
+                      <TableHead>Cliente</TableHead>
+                      <TableHead>Emisor</TableHead>
+                      <TableHead className="text-right">Monto</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {monthlyData.chequesImputadosClientes.map((cheque) => {
+                      // Buscar el cliente correspondiente por clienteId
+                      const clienteCorrespondiente = vehicles.find(
+                        (v) => v.id === cheque.clienteId,
+                      );
+                      return (
+                        <TableRow key={cheque.id}>
+                          <TableCell className="text-sm">
+                            {cheque.fechaImputacion
+                              ? new Date(
+                                  cheque.fechaImputacion,
+                                ).toLocaleDateString("es-AR")
+                              : "—"}
+                          </TableCell>
+                          <TableCell className="font-medium">
+                            {cheque.numero || "—"}
+                          </TableCell>
+                          <TableCell>
+                            {clienteCorrespondiente
+                              ? clienteCorrespondiente.cliente
+                              : "Cliente no encontrado"}
+                          </TableCell>
+                          <TableCell>{cheque.emisor}</TableCell>
+                          <TableCell className="text-right font-semibold text-purple-600">
+                            ${cheque.monto.toFixed(2)}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Cheques Imputados (Proveedores / Cuentas Corrientes) */}
+        {monthlyData.chequesImputadosProveedores.length > 0 && (
+          <Card className="bg-white/80 backdrop-blur-sm">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Receipt className="h-5 w-5 text-blue-600" />
+                Cheques Imputados (Proveedores)
+              </CardTitle>
+              <CardDescription>
+                Cheques utilizados para saldar cuentas corrientes en{" "}
+                {new Date(selectedMonth + "-01").toLocaleDateString("es-AR", {
+                  month: "long",
+                  year: "numeric",
+                })}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Fecha Imputación</TableHead>
+                      <TableHead>Número</TableHead>
+                      <TableHead>Destino</TableHead>
+                      <TableHead>Emisor</TableHead>
+                      <TableHead className="text-right">Monto</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {monthlyData.chequesImputadosProveedores.map((cheque) => (
+                      <TableRow key={cheque.id}>
+                        <TableCell className="text-sm">
+                          {cheque.fechaImputacion
+                            ? new Date(
+                                cheque.fechaImputacion,
+                              ).toLocaleDateString("es-AR")
+                            : "—"}
+                        </TableCell>
+                        <TableCell className="font-medium">
+                          {cheque.numero || "—"}
+                        </TableCell>
+                        <TableCell>
+                          {cheque.destino || "Cuenta Corriente"}
+                        </TableCell>
+                        <TableCell>{cheque.emisor}</TableCell>
+                        <TableCell className="text-right font-semibold text-blue-600">
+                          ${cheque.monto.toFixed(2)}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Clientes Deudores */}
+        <Card className="bg-white/80 backdrop-blur-sm">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5 text-orange-600" />
+              Clientes Deudores
+            </CardTitle>
+            <CardDescription>
+              Clientes que tienen saldo pendiente por pagar en{" "}
+              {new Date(selectedMonth + "-01").toLocaleDateString("es-AR", {
+                month: "long",
+                year: "numeric",
+              })}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Cliente</TableHead>
+                    <TableHead>Teléfono</TableHead>
+                    <TableHead>Patente</TableHead>
+                    <TableHead className="text-right">Deuda</TableHead>
+                    <TableHead className="text-center">Acciones</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {monthlyData.deudores.length > 0 ? (
+                    monthlyData.deudores.map((orden) => (
+                      <TableRow key={orden.id}>
+                        <TableCell className="font-medium">
+                          {orden.cliente}
+                        </TableCell>
+                        <TableCell>
+                          {orden.telefono || "Sin teléfono"}
+                        </TableCell>
+                        <TableCell>{orden.patente}</TableCell>
+                        <TableCell className="text-right font-semibold text-red-600">
+                          ${orden.saldoPendiente.toFixed(2)}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          {orden.telefono && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                const mensaje = `Hola ${orden.cliente}, le recordamos que tiene un saldo pendiente de $${orden.saldoPendiente.toFixed(2)} por la orden ${orden.numeroOT} del vehículo ${orden.patente}.`;
+                                const url = `https://wa.me/549${orden.telefono!.replace(/\D/g, "")}?text=${encodeURIComponent(mensaje)}`;
+                                window.open(url, "_blank");
+                              }}
+                              className="gap-1"
+                            >
+                              <MessageCircle className="h-4 w-4" />
+                              WhatsApp
+                            </Button>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell
+                        colSpan={5}
+                        className="text-center py-8 text-gray-500"
+                      >
+                        No hay clientes con deudas pendientes
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Footer */}
+        <div className="text-center text-gray-500 text-sm">
+          <p>💼 Información financiera confidencial - Taller de Autos</p>
+          <p>Reporte generado el {new Date().toLocaleDateString("es-AR")}</p>
         </div>
       </div>
-    </Layout>
+    </div>
   );
 }

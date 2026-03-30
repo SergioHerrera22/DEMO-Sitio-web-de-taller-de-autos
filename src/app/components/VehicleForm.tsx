@@ -70,6 +70,7 @@ export function VehicleForm({
                 placeholder="ABC123"
                 required
                 className="uppercase"
+                data-tour="vehicle-form-patente"
               />
             </div>
             <div>
@@ -127,6 +128,7 @@ export function VehicleForm({
                 onChange={handleChange}
                 placeholder="Nombre del propietario"
                 required
+                data-tour="vehicle-form-cliente"
               />
             </div>
             <div className="md:col-span-2">
@@ -139,6 +141,7 @@ export function VehicleForm({
                 onChange={handleChange}
                 placeholder="011-4444-5555"
                 required
+                data-tour="vehicle-form-telefono"
               />
             </div>
             <div className="md:col-span-2">
@@ -159,7 +162,7 @@ export function VehicleForm({
             <Button type="button" variant="outline" onClick={onCancel}>
               Cancelar
             </Button>
-            <Button type="submit">
+            <Button type="submit" data-tour="vehicle-form-submit">
               {isEditMode ? "Guardar Cambios" : "Registrar Vehículo"}
             </Button>
           </div>

@@ -10,6 +10,7 @@ import {
   Shield,
   RefreshCw,
   Menu,
+  BookOpen,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { toast } from "sonner";
@@ -17,7 +18,6 @@ import { sync } from "../../services/syncEngine";
 import { HelpGuide } from "./HelpGuide";
 import { WelcomeBanner } from "./WelcomeBanner";
 import { OnboardingGuide, useOnboardingGuide } from "./OnboardingGuide";
-import { BookOpen } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -38,13 +38,37 @@ export function Layout({ children }: { children: React.ReactNode }) {
   };
 
   const navLinks = [
-    { path: "/", label: "Inicio", icon: Home },
-    { path: "/ordenes", label: "Órdenes", icon: FileText },
-    { path: "/cuentas", label: "Cuentas", icon: Receipt },
-    { path: "/cheques", label: "Cheques", icon: CreditCard },
-    { path: "/lavados", label: "Lavados", icon: Droplets },
-
-    { path: "/gestion-financiera", label: "Finanzas", icon: Shield },
+    { path: "/", label: "Inicio", icon: Home, tourId: "nav-inicio" },
+    {
+      path: "/ordenes",
+      label: "Órdenes",
+      icon: FileText,
+      tourId: "nav-ordenes",
+    },
+    {
+      path: "/cuentas",
+      label: "Cuentas",
+      icon: Receipt,
+      tourId: "nav-cuentas",
+    },
+    {
+      path: "/cheques",
+      label: "Cheques",
+      icon: CreditCard,
+      tourId: "nav-cheques",
+    },
+    {
+      path: "/lavados",
+      label: "Lavados",
+      icon: Droplets,
+      tourId: "nav-lavados",
+    },
+    {
+      path: "/gestion-financiera",
+      label: "Finanzas",
+      icon: Shield,
+      tourId: "nav-finanzas",
+    },
   ];
 
   const showRefreshButton = location.pathname !== "/gestion-financiera";
@@ -81,10 +105,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
               </div>
               {/* Desktop nav */}
               <div className="ml-6 hidden md:flex space-x-1">
-                {navLinks.map(({ path, label, icon: Icon }) => (
+                {navLinks.map(({ path, label, icon: Icon, tourId }) => (
                   <Link
                     key={path}
                     to={path}
+                    data-tour={tourId}
                     className={`inline-flex items-center px-3 py-2 rounded-md text-sm font-medium transition ${
                       isActive(path)
                         ? "bg-blue-50 text-blue-600 border-b-2 border-blue-500"
@@ -122,10 +147,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
                     <div className="px-2 pb-4">
                       <div className="space-y-1">
-                        {navLinks.map(({ path, label, icon: Icon }) => (
+                        {navLinks.map(({ path, label, icon: Icon, tourId }) => (
                           <SheetClose asChild key={path}>
                             <Link
                               to={path}
+                              data-tour={`${tourId}-mobile`}
                               className={`flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition ${
                                 isActive(path)
                                   ? "bg-blue-50 text-blue-700"
@@ -150,6 +176,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 className="gap-2"
                 onClick={showGuide}
                 title="Ver guía de uso"
+                data-tour="tour-open-button"
               >
                 <BookOpen className="h-4 w-4" />
                 <span className="hidden sm:inline">Tour</span>

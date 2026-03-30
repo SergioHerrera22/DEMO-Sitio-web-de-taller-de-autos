@@ -41,7 +41,7 @@ export function VehicleSection(props: {
         <div>
           <Label htmlFor="vehicle">Vehículo *</Label>
           <Select value={vehicleId} onValueChange={onVehicleChange}>
-            <SelectTrigger>
+            <SelectTrigger data-tour="order-form-vehicle-select">
               <SelectValue placeholder="Seleccione vehículo" />
             </SelectTrigger>
             <SelectContent>
@@ -69,7 +69,11 @@ export function VehicleSection(props: {
 
       <div>
         <Label htmlFor="fecha">Fecha *</Label>
-        <Input type="date" value={fecha} onChange={(e) => onFechaChange(e.target.value)} />
+        <Input
+          type="date"
+          value={fecha}
+          onChange={(e) => onFechaChange(e.target.value)}
+        />
       </div>
 
       <div>
@@ -93,9 +97,9 @@ export function VehicleSection(props: {
           placeholder="Técnico responsable"
           value={tecnico}
           onChange={(e) => onTecnicoChange(e.target.value)}
+          data-tour="order-form-tecnico"
         />
       </div>
     </div>
   );
 }
-

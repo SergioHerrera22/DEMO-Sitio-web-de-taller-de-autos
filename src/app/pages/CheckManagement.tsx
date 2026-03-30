@@ -130,7 +130,9 @@ export function CheckManagement() {
           : c,
       );
 
-      await Promise.all(updatedCheques.map((c) => dataRepository.saveCheque(c)));
+      await Promise.all(
+        updatedCheques.map((c) => dataRepository.saveCheque(c)),
+      );
       setCheques(updatedCheques);
       setCuentasCorrientes((prev) =>
         prev.map((item) =>
@@ -200,8 +202,12 @@ export function CheckManagement() {
           : c,
       );
 
-      await Promise.all(updatedCheques.map((c) => dataRepository.saveCheque(c)));
-      await Promise.all(updatedOrdenes.map((o) => dataRepository.saveOrdenTrabajo(o)));
+      await Promise.all(
+        updatedCheques.map((c) => dataRepository.saveCheque(c)),
+      );
+      await Promise.all(
+        updatedOrdenes.map((o) => dataRepository.saveOrdenTrabajo(o)),
+      );
       setCheques(updatedCheques);
       setOrdenesTrabajo(updatedOrdenes);
 
@@ -321,6 +327,7 @@ export function CheckManagement() {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
+                data-tour="cheques-search-input"
               />
             </div>
             <select
@@ -333,7 +340,11 @@ export function CheckManagement() {
               <option value="imputado">Imputado</option>
               <option value="cobrado">Cobrado</option>
             </select>
-            <Button onClick={() => setShowForm(true)} className="gap-2">
+            <Button
+              onClick={() => setShowForm(true)}
+              className="gap-2"
+              data-tour="cheques-new-btn"
+            >
               <Plus className="h-4 w-4" /> Nuevo Cheque
             </Button>
           </div>

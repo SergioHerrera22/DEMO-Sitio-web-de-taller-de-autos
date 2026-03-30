@@ -71,7 +71,10 @@ export function OrderForm({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent
+        className="max-w-2xl max-h-[90vh] overflow-y-auto"
+        data-tour="order-form-dialog"
+      >
         <DialogHeader>
           <DialogTitle>
             {initialData ? "Editar Orden de Trabajo" : "Nueva Orden de Trabajo"}
@@ -136,7 +139,7 @@ export function OrderForm({
             <Button type="button" variant="outline" onClick={onClose}>
               Cancelar
             </Button>
-            <Button type="submit">
+            <Button type="submit" data-tour="order-form-submit">
               {initialData ? "Actualizar" : "Crear"} Orden
             </Button>
           </DialogFooter>

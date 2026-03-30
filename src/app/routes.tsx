@@ -25,7 +25,11 @@ function VehicleDetailPage() {
 }
 
 function BusinessExpensesPage() {
-  return <BusinessExpenses />;
+  return (
+    <Layout>
+      <BusinessExpenses />
+    </Layout>
+  );
 }
 
 function WorkOrdersPage() {

@@ -24,7 +24,7 @@ export function HelpGuide() {
       </SheetTrigger>
       <SheetContent
         side="right"
-        className="w-full sm:w-[500px] flex flex-col p-0"
+        className="w-full sm:w-[500px] h-dvh flex flex-col p-0 overflow-hidden"
       >
         <SheetHeader className="px-6 py-4 border-b flex-row justify-between items-center">
           <SheetTitle className="text-xl font-bold">
@@ -37,7 +37,7 @@ export function HelpGuide() {
           </SheetClose>
         </SheetHeader>
 
-        <ScrollArea className="flex-1">
+        <ScrollArea className="flex-1 min-h-0">
           <div className="px-6 py-4 space-y-6">
             {/* Bienvenida */}
             <section>

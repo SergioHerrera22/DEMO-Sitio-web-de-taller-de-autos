@@ -525,6 +525,7 @@ export function WorkOrders() {
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
+                  data-tour="orders-search-input"
                 />
               </div>
             </div>
@@ -553,7 +554,11 @@ export function WorkOrders() {
                 <option value="monto-asc">Monto: menor a mayor</option>
               </select>
             </div>
-            <Button onClick={() => setShowForm(true)} className="gap-2">
+            <Button
+              onClick={() => setShowForm(true)}
+              className="gap-2"
+              data-tour="orders-new-btn"
+            >
               <Plus className="h-4 w-4" />
               Nueva OT
             </Button>

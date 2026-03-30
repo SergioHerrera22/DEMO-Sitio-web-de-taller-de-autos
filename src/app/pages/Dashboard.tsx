@@ -242,6 +242,7 @@ export function Dashboard() {
                 variant="secondary"
                 className="bg-white text-blue-600 font-semibold"
                 onClick={handleOpenCreateVehicle}
+                data-tour="dashboard-new-vehicle-btn"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Registrar nuevo auto
@@ -269,6 +270,7 @@ export function Dashboard() {
                   }}
                   onKeyPress={handleKeyPress}
                   className="uppercase text-lg"
+                  data-tour="dashboard-search-patente"
                 />
               </div>
               <Button onClick={handleSearch} size="lg">
