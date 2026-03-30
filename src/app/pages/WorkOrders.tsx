@@ -322,35 +322,30 @@ export function WorkOrders() {
   const handleCreateOrder = async (
     data: Omit<OrdenTrabajo, "id" | "createdAt" | "numeroOT">,
   ) => {
-    try {
-      const vehicle = vehicles.find((v) => v.id === data.vehicleId);
+    const vehicle = vehicles.find((v) => v.id === data.vehicleId);
 
-      const telefono = vehicle?.telefono || "";
-      const numeroOT = await generateNextOTNumber();
+    const telefono = vehicle?.telefono || "";
+    const numeroOT = await generateNextOTNumber();
 
-      const newOrder: OrdenTrabajo = {
-        ...data,
-        id: createId(),
-        numeroOT,
-        telefono,
-        createdAt: new Date().toISOString(),
-      };
+    const newOrder: OrdenTrabajo = {
+      ...data,
+      id: createId(),
+      numeroOT,
+      telefono,
+      createdAt: new Date().toISOString(),
+    };
 
-      await dataRepository.saveOrdenTrabajo(newOrder);
+    await dataRepository.saveOrdenTrabajo(newOrder);
 
-      setOrders([...orders, newOrder]);
+    setOrders([...orders, newOrder]);
 
-      setShowForm(false);
-      setEditingOrder(undefined);
+    setShowForm(false);
+    setEditingOrder(undefined);
 
-      toast.success("Orden de trabajo creada exitosamente");
+    toast.success("Orden de trabajo creada exitosamente");
 
-      // Siempre imprimir las tres hojas en un solo documento
-      handlePrintPackage(newOrder);
-    } catch (error) {
-      console.error(error);
-      toast.error((error as Error).message || "No se pudo crear la orden");
-    }
+    // Siempre imprimir las tres hojas en un solo documento
+    handlePrintPackage(newOrder);
   };
 
   const handleUpdateOrder = async (
@@ -358,47 +353,35 @@ export function WorkOrders() {
   ) => {
     if (!editingOrder) return;
 
-    try {
-      const updatedOrder = {
-        ...editingOrder,
-        ...data,
-      };
+    const updatedOrder = {
+      ...editingOrder,
+      ...data,
+    };
 
-      await dataRepository.saveOrdenTrabajo(updatedOrder);
+    await dataRepository.saveOrdenTrabajo(updatedOrder);
 
-      setOrders(
-        orders.map((o) => (o.id === editingOrder.id ? updatedOrder : o)),
-      );
+    setOrders(orders.map((o) => (o.id === editingOrder.id ? updatedOrder : o)));
 
-      setShowForm(false);
-      setEditingOrder(undefined);
+    setShowForm(false);
+    setEditingOrder(undefined);
 
-      toast.success("Orden actualizada exitosamente");
+    toast.success("Orden actualizada exitosamente");
 
-      // Siempre imprimir las tres hojas en un solo documento
-      handlePrintPackage(updatedOrder);
-    } catch (error) {
-      console.error(error);
-      toast.error((error as Error).message || "No se pudo actualizar la orden");
-    }
+    // Siempre imprimir las tres hojas en un solo documento
+    handlePrintPackage(updatedOrder);
   };
 
   const handleDeleteOrder = async (orderId: string) => {
     if (!confirm("¿Confirmá que querés eliminar esta orden de trabajo?"))
       return;
 
-    try {
-      await dataRepository.deleteOrdenTrabajo(orderId);
+    await dataRepository.deleteOrdenTrabajo(orderId);
 
-      setOrders(orders.filter((o) => o.id !== orderId));
+    setOrders(orders.filter((o) => o.id !== orderId));
 
-      setShowDetailModal(false);
+    setShowDetailModal(false);
 
-      toast.success("Orden eliminada exitosamente");
-    } catch (error) {
-      console.error(error);
-      toast.error((error as Error).message || "No se pudo eliminar la orden");
-    }
+    toast.success("Orden eliminada exitosamente");
   };
 
   const handleEditOrder = (order: OrdenTrabajo) => {

@@ -75,26 +75,21 @@ export function VehicleDetail() {
   const handleAddOrder = async (
     orderData: Omit<OrdenTrabajo, "id" | "createdAt" | "numeroOT">,
   ) => {
-    try {
-      const numeroOT = await generateNextOTNumber();
-      const newOrder: OrdenTrabajo = {
-        ...orderData,
-        id: createId(),
-        numeroOT,
-        createdAt: new Date().toISOString(),
-      };
+    const numeroOT = await generateNextOTNumber();
+    const newOrder: OrdenTrabajo = {
+      ...orderData,
+      id: createId(),
+      numeroOT,
+      createdAt: new Date().toISOString(),
+    };
 
-      await dataRepository.saveOrdenTrabajo(newOrder);
+    await dataRepository.saveOrdenTrabajo(newOrder);
 
-      setOrders([newOrder, ...orders]);
+    setOrders([newOrder, ...orders]);
 
-      setShowOrderForm(false);
+    setShowOrderForm(false);
 
-      toast.success("Orden de trabajo creada exitosamente");
-    } catch (error) {
-      console.error(error);
-      toast.error((error as Error).message || "No se pudo crear la orden");
-    }
+    toast.success("Orden de trabajo creada exitosamente");
   };
 
   const handleUpdateOrder = async (
@@ -102,24 +97,19 @@ export function VehicleDetail() {
   ) => {
     if (!editingOrder) return;
 
-    try {
-      const updated = {
-        ...editingOrder,
-        ...orderData,
-      };
+    const updated = {
+      ...editingOrder,
+      ...orderData,
+    };
 
-      await dataRepository.saveOrdenTrabajo(updated);
+    await dataRepository.saveOrdenTrabajo(updated);
 
-      setOrders(orders.map((o) => (o.id === editingOrder.id ? updated : o)));
+    setOrders(orders.map((o) => (o.id === editingOrder.id ? updated : o)));
 
-      setShowOrderForm(false);
-      setEditingOrder(undefined);
+    setShowOrderForm(false);
+    setEditingOrder(undefined);
 
-      toast.success("Orden actualizada exitosamente");
-    } catch (error) {
-      console.error(error);
-      toast.error((error as Error).message || "No se pudo actualizar la orden");
-    }
+    toast.success("Orden actualizada exitosamente");
   };
 
   const handleEditOrder = (order: OrdenTrabajo) => {
@@ -132,18 +122,13 @@ export function VehicleDetail() {
     if (!confirm("¿Confirmá que querés eliminar esta orden de trabajo?"))
       return;
 
-    try {
-      await dataRepository.deleteOrdenTrabajo(orderId);
+    await dataRepository.deleteOrdenTrabajo(orderId);
 
-      setOrders(orders.filter((o) => o.id !== orderId));
+    setOrders(orders.filter((o) => o.id !== orderId));
 
-      setShowOrderDetailModal(false);
+    setShowOrderDetailModal(false);
 
-      toast.success("Orden eliminada exitosamente");
-    } catch (error) {
-      console.error(error);
-      toast.error((error as Error).message || "No se pudo eliminar la orden");
-    }
+    toast.success("Orden eliminada exitosamente");
   };
 
   const getStatusColor = (estado: string) => {

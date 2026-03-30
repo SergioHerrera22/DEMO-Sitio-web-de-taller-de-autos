@@ -6,7 +6,7 @@ import type {
   Cheque,
   CuentaCorriente,
 } from "../app/types";
-import { DEMO_LIMITS, DemoLimitError, DemoLimitedTable } from "./demoConfig";
+import { enqueueOutbox, sync } from "./syncEngine";
 
 function nowIso() {
   return new Date().toISOString();
@@ -18,38 +18,17 @@ function broadcastDataRefresh() {
   }
 }
 
-async function assertDemoLimit(
-  table: DemoLimitedTable,
-  isNewRecord: boolean,
-  isDeleted: boolean,
-) {
-  if (!isNewRecord || isDeleted) return;
-
-  const activeCount = await db[table]
-    .filter((item: { deleted?: boolean }) => !item.deleted)
-    .count();
-
-  if (activeCount >= DEMO_LIMITS[table]) {
-    throw new DemoLimitError(table, DEMO_LIMITS[table]);
-  }
-}
-
 export const dataRepository = {
   async saveVehicle(entity: Vehicle) {
-    const previous = await db.vehicles.get(entity.id);
     const updatedAt = nowIso();
     const record: Vehicle = {
       ...entity,
       updatedAt,
       deleted: entity.deleted ?? false,
     };
-
-    await assertDemoLimit(
-      "vehicles",
-      !previous || previous.deleted === true,
-      record.deleted ?? false,
-    );
     await db.vehicles.put(record);
+    await enqueueOutbox("vehicles", "upsert", record.id, record);
+    if (navigator.onLine) void sync();
     broadcastDataRefresh();
     return record;
   },
@@ -64,24 +43,21 @@ export const dataRepository = {
       updatedAt,
     };
     await db.vehicles.put(record);
+    await enqueueOutbox("vehicles", "delete", id, record);
+    if (navigator.onLine) void sync();
     broadcastDataRefresh();
   },
 
   async saveOrdenTrabajo(entity: OrdenTrabajo) {
-    const previous = await db.ordenesTrabajo.get(entity.id);
     const updatedAt = nowIso();
     const record: OrdenTrabajo = {
       ...entity,
       updatedAt,
       deleted: entity.deleted ?? false,
     };
-
-    await assertDemoLimit(
-      "ordenesTrabajo",
-      !previous || previous.deleted === true,
-      record.deleted ?? false,
-    );
     await db.ordenesTrabajo.put(record);
+    await enqueueOutbox("ordenesTrabajo", "upsert", record.id, record);
+    if (navigator.onLine) void sync();
     broadcastDataRefresh();
     return record;
   },
@@ -96,24 +72,21 @@ export const dataRepository = {
       updatedAt,
     };
     await db.ordenesTrabajo.put(record);
+    await enqueueOutbox("ordenesTrabajo", "delete", id, record);
+    if (navigator.onLine) void sync();
     broadcastDataRefresh();
   },
 
   async saveExpense(entity: Expense) {
-    const previous = await db.expenses.get(entity.id);
     const updatedAt = nowIso();
     const record: Expense = {
       ...entity,
       updatedAt,
       deleted: entity.deleted ?? false,
     };
-
-    await assertDemoLimit(
-      "expenses",
-      !previous || previous.deleted === true,
-      record.deleted ?? false,
-    );
     await db.expenses.put(record);
+    await enqueueOutbox("expenses", "upsert", record.id, record);
+    if (navigator.onLine) void sync();
     broadcastDataRefresh();
     return record;
   },
@@ -128,24 +101,21 @@ export const dataRepository = {
       updatedAt,
     };
     await db.expenses.put(record);
+    await enqueueOutbox("expenses", "delete", id, record);
+    if (navigator.onLine) void sync();
     broadcastDataRefresh();
   },
 
   async saveCheque(entity: Cheque) {
-    const previous = await db.cheques.get(entity.id);
     const updatedAt = nowIso();
     const record: Cheque = {
       ...entity,
       updatedAt,
       deleted: entity.deleted ?? false,
     };
-
-    await assertDemoLimit(
-      "cheques",
-      !previous || previous.deleted === true,
-      record.deleted ?? false,
-    );
     await db.cheques.put(record);
+    await enqueueOutbox("cheques", "upsert", record.id, record);
+    if (navigator.onLine) void sync();
     broadcastDataRefresh();
     return record;
   },
@@ -160,24 +130,21 @@ export const dataRepository = {
       updatedAt,
     };
     await db.cheques.put(record);
+    await enqueueOutbox("cheques", "delete", id, record);
+    if (navigator.onLine) void sync();
     broadcastDataRefresh();
   },
 
   async saveCuentaCorriente(entity: CuentaCorriente) {
-    const previous = await db.cuentasCorrientes.get(entity.id);
     const updatedAt = nowIso();
     const record: CuentaCorriente = {
       ...entity,
       updatedAt,
       deleted: entity.deleted ?? false,
     };
-
-    await assertDemoLimit(
-      "cuentasCorrientes",
-      !previous || previous.deleted === true,
-      record.deleted ?? false,
-    );
     await db.cuentasCorrientes.put(record);
+    await enqueueOutbox("cuentasCorrientes", "upsert", record.id, record);
+    if (navigator.onLine) void sync();
     broadcastDataRefresh();
     return record;
   },
@@ -192,6 +159,8 @@ export const dataRepository = {
       updatedAt,
     };
     await db.cuentasCorrientes.put(record);
+    await enqueueOutbox("cuentasCorrientes", "delete", id, record);
+    if (navigator.onLine) void sync();
     broadcastDataRefresh();
   },
 };

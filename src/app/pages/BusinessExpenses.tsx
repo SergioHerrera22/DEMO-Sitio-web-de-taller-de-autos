@@ -45,7 +45,7 @@ import {
 
 import { toast } from "sonner";
 import { Layout } from "../components/Layout";
-import { DEMO_LIMITS } from "../../services/demoConfig";
+import { sync } from "../../services/syncEngine";
 
 import {
   OrdenTrabajo,
@@ -67,7 +67,11 @@ export function BusinessExpenses() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showPasswordDialog, setShowPasswordDialog] = useState(true);
+  const [isSyncingNow, setIsSyncingNow] = useState(false);
+  const [outboxPendingCount, setOutboxPendingCount] = useState(0);
   const [lastSyncOkAt, setLastSyncOkAt] = useState<string>("");
+  const [lastSyncError, setLastSyncError] = useState<string>("");
+  const [lastSyncErrorAt, setLastSyncErrorAt] = useState<string>("");
 
   const [ordenesTrabajo, setOrdenesTrabajo] = useState<OrdenTrabajo[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
@@ -116,8 +120,34 @@ export function BusinessExpenses() {
   };
 
   const loadSyncStatus = async () => {
-    const okAt = await db.sync_meta.get("lastSyncOkAt");
+    const [pendingCount, okAt, err, errAt] = await Promise.all([
+      db.outbox.count(),
+      db.sync_meta.get("lastSyncOkAt"),
+      db.sync_meta.get("lastSyncError"),
+      db.sync_meta.get("lastSyncErrorAt"),
+    ]);
+
+    setOutboxPendingCount(pendingCount);
     setLastSyncOkAt(okAt?.value ?? "");
+    setLastSyncError(err?.value ?? "");
+    setLastSyncErrorAt(errAt?.value ?? "");
+  };
+
+  const handleRetrySync = async () => {
+    if (isSyncingNow) return;
+    setIsSyncingNow(true);
+    try {
+      const res = await sync();
+      if (!res?.success) toast.error("Error sincronizando datos");
+      else toast.success("Sincronización completada");
+      window.dispatchEvent(new Event("app:refreshData"));
+    } catch (error) {
+      console.error(error);
+      toast.error("Error sincronizando datos");
+    } finally {
+      setIsSyncingNow(false);
+      await loadSyncStatus();
+    }
   };
 
   const reloadData = async () => {
@@ -221,10 +251,7 @@ export function BusinessExpenses() {
       monthlyExpenses.reduce((sum, expense) => sum + expense.total, 0) +
       monthlyProviderExpenses.reduce((sum, gasto) => sum + gasto.total, 0) +
       // Cheques imputados a proveedores/cuentas corrientes (pago) cuentan como egreso
-      monthlyChequesImputadosProveedores.reduce(
-        (sum, cheque) => sum + cheque.monto,
-        0,
-      );
+      monthlyChequesImputadosProveedores.reduce((sum, cheque) => sum + cheque.monto, 0);
 
     const totalIvaVentas = monthlyOrdenes.reduce((sum, orden) => {
       const iva = orden.monto - orden.monto / 1.21;
@@ -347,45 +374,50 @@ export function BusinessExpenses() {
             </CardContent>
           </Card>
 
-          {/* Estado demo local */}
+          {/* Estado de sincronización */}
           <Card className="bg-white/80 backdrop-blur-sm">
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center gap-2">
-                <RefreshCw className="h-5 w-5" />
-                Estado de datos (demo)
+                <RefreshCw className={`h-5 w-5 ${isSyncingNow ? "animate-spin" : ""}`} />
+                Estado de sincronización
               </CardTitle>
               <CardDescription>
-                Modo local activo: sin conexion a base de datos remota
+                Cola pendiente: {outboxPendingCount} operación
+                {outboxPendingCount !== 1 ? "es" : ""}
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div className="space-y-1 text-sm">
                   <div className="text-gray-700">
-                    <span className="font-medium">
-                      Ultima actualizacion local:
-                    </span>{" "}
+                    <span className="font-medium">Última sincronización OK:</span>{" "}
                     {lastSyncOkAt
                       ? new Date(lastSyncOkAt).toLocaleString("es-AR")
                       : "—"}
                   </div>
                   <div className="text-gray-700">
-                    <span className="font-medium">Limites demo:</span> Vehiculos{" "}
-                    {DEMO_LIMITS.vehicles}, OT {DEMO_LIMITS.ordenesTrabajo},
-                    gastos {DEMO_LIMITS.expenses}, cheques {DEMO_LIMITS.cheques}
-                    , cuentas {DEMO_LIMITS.cuentasCorrientes}
+                    <span className="font-medium">Último error:</span>{" "}
+                    {lastSyncError ? lastSyncError : "—"}
                   </div>
+                  {lastSyncErrorAt && (
+                    <div className="text-gray-500 text-xs">
+                      {new Date(lastSyncErrorAt).toLocaleString("es-AR")}
+                    </div>
+                  )}
                 </div>
 
-                <Button
-                  onClick={reloadData}
-                  variant="outline"
-                  size="sm"
-                  className="gap-2"
-                >
-                  <RefreshCw className="h-4 w-4" />
-                  Recargar datos locales
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={handleRetrySync}
+                    variant="outline"
+                    size="sm"
+                    className="gap-2"
+                    disabled={isSyncingNow}
+                  >
+                    <RefreshCw className={`h-4 w-4 ${isSyncingNow ? "animate-spin" : ""}`} />
+                    Reintentar sincronización
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -770,17 +802,15 @@ export function BusinessExpenses() {
                         <TableRow key={cheque.id}>
                           <TableCell className="text-sm">
                             {cheque.fechaImputacion
-                              ? new Date(
-                                  cheque.fechaImputacion,
-                                ).toLocaleDateString("es-AR")
+                              ? new Date(cheque.fechaImputacion).toLocaleDateString(
+                                  "es-AR",
+                                )
                               : "—"}
                           </TableCell>
                           <TableCell className="font-medium">
                             {cheque.numero || "—"}
                           </TableCell>
-                          <TableCell>
-                            {cheque.destino || "Cuenta Corriente"}
-                          </TableCell>
+                          <TableCell>{cheque.destino || "Cuenta Corriente"}</TableCell>
                           <TableCell>{cheque.emisor}</TableCell>
                           <TableCell className="text-right font-semibold text-blue-600">
                             ${cheque.monto.toFixed(2)}

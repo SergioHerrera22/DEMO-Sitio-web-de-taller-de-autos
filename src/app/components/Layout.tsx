@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { toast } from "sonner";
+import { sync } from "../../services/syncEngine";
 import {
   Sheet,
   SheetContent,
@@ -48,11 +49,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
     setIsRefreshing(true);
     try {
+      const res = await sync();
+      if (!res?.success) toast.error("Error sincronizando datos");
+
       window.dispatchEvent(new Event("app:refreshData"));
       toast.success("Datos actualizados");
     } catch (error) {
       console.error(error);
-      toast.error("Error actualizando datos locales");
+      toast.error("Error sincronizando datos");
     } finally {
       setIsRefreshing(false);
     }
@@ -145,9 +149,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   <RefreshCw
                     className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`}
                   />
-                  <span className="hidden sm:inline">
-                    Actualizar Datos Locales
-                  </span>
+                  <span className="hidden sm:inline">Actualizar Datos</span>
                 </Button>
               )}
             </div>

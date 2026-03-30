@@ -102,28 +102,21 @@ export function Dashboard() {
   const handleRegisterVehicle = async (
     vehicleData: Omit<Vehicle, "id" | "createdAt">,
   ) => {
-    try {
-      const newVehicle: Vehicle = {
-        ...vehicleData,
-        id: createId(),
-        createdAt: new Date().toISOString(),
-      };
+    const newVehicle: Vehicle = {
+      ...vehicleData,
+      id: createId(),
+      createdAt: new Date().toISOString(),
+    };
 
-      await dataRepository.saveVehicle(newVehicle);
+    await dataRepository.saveVehicle(newVehicle);
 
-      setVehicles((prev) => [...prev, newVehicle]);
-      setShowVehicleForm(false);
-      setEditingVehicle(null);
+    setVehicles((prev) => [...prev, newVehicle]);
+    setShowVehicleForm(false);
+    setEditingVehicle(null);
 
-      toast.success("Vehículo registrado exitosamente");
+    toast.success("Vehículo registrado exitosamente");
 
-      navigate(`/vehiculo/${newVehicle.id}`);
-    } catch (error) {
-      console.error(error);
-      toast.error(
-        (error as Error).message || "No se pudo registrar el vehículo",
-      );
-    }
+    navigate(`/vehiculo/${newVehicle.id}`);
   };
 
   const handleUpdateVehicle = async (
@@ -131,29 +124,22 @@ export function Dashboard() {
   ) => {
     if (!editingVehicle) return;
 
-    try {
-      const updatedVehicle: Vehicle = {
-        ...editingVehicle,
-        ...vehicleData,
-      };
+    const updatedVehicle: Vehicle = {
+      ...editingVehicle,
+      ...vehicleData,
+    };
 
-      await dataRepository.saveVehicle(updatedVehicle);
+    await dataRepository.saveVehicle(updatedVehicle);
 
-      setVehicles((prev) =>
-        prev.map((vehicle) =>
-          vehicle.id === updatedVehicle.id ? updatedVehicle : vehicle,
-        ),
-      );
+    setVehicles((prev) =>
+      prev.map((vehicle) =>
+        vehicle.id === updatedVehicle.id ? updatedVehicle : vehicle,
+      ),
+    );
 
-      setShowVehicleForm(false);
-      setEditingVehicle(null);
-      toast.success("Vehículo actualizado exitosamente");
-    } catch (error) {
-      console.error(error);
-      toast.error(
-        (error as Error).message || "No se pudo actualizar el vehículo",
-      );
-    }
+    setShowVehicleForm(false);
+    setEditingVehicle(null);
+    toast.success("Vehículo actualizado exitosamente");
   };
 
   const handleOpenCreateVehicle = () => {
@@ -173,23 +159,16 @@ export function Dashboard() {
 
     if (!shouldDelete) return;
 
-    try {
-      await dataRepository.deleteVehicle(vehicle.id);
+    await dataRepository.deleteVehicle(vehicle.id);
 
-      setVehicles((prev) => prev.filter((item) => item.id !== vehicle.id));
+    setVehicles((prev) => prev.filter((item) => item.id !== vehicle.id));
 
-      if (editingVehicle?.id === vehicle.id) {
-        setEditingVehicle(null);
-        setShowVehicleForm(false);
-      }
-
-      toast.success("Vehículo eliminado exitosamente");
-    } catch (error) {
-      console.error(error);
-      toast.error(
-        (error as Error).message || "No se pudo eliminar el vehículo",
-      );
+    if (editingVehicle?.id === vehicle.id) {
+      setEditingVehicle(null);
+      setShowVehicleForm(false);
     }
+
+    toast.success("Vehículo eliminado exitosamente");
   };
 
   const normalizedListSearchTerm = listSearchTerm.trim().toLowerCase();

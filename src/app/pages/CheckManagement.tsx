@@ -115,38 +115,31 @@ export function CheckManagement() {
         updatedAt: new Date().toISOString(),
       };
 
-      try {
-        // Actualizar DB y Estado
-        await dataRepository.saveCuentaCorriente(empresaActualizada);
+      // Actualizar DB y Estado
+      await dataRepository.saveCuentaCorriente(empresaActualizada);
 
-        const updatedCheques = cheques.map((c) =>
-          c.id === selectedCheque.id
-            ? {
-                ...c,
-                estado: "imputado" as const,
-                fechaImputacion: new Date().toISOString(),
-                observaciones:
-                  `${c.observaciones || ""} Imputado a CC: ${empresa.entidad}`.trim(),
-              }
-            : c,
-        );
+      const updatedCheques = cheques.map((c) =>
+        c.id === selectedCheque.id
+          ? {
+              ...c,
+              estado: "imputado" as const,
+              fechaImputacion: new Date().toISOString(),
+              observaciones:
+                `${c.observaciones || ""} Imputado a CC: ${empresa.entidad}`.trim(),
+            }
+          : c,
+      );
 
-        await Promise.all(
-          updatedCheques.map((c) => dataRepository.saveCheque(c)),
-        );
-        setCheques(updatedCheques);
-        setCuentasCorrientes((prev) =>
-          prev.map((item) =>
-            item.id === selectedCuentaId ? empresaActualizada : item,
-          ),
-        );
+      await Promise.all(updatedCheques.map((c) => dataRepository.saveCheque(c)));
+      setCheques(updatedCheques);
+      setCuentasCorrientes((prev) =>
+        prev.map((item) =>
+          item.id === selectedCuentaId ? empresaActualizada : item,
+        ),
+      );
 
-        toast.success(`Cheque imputado a ${empresa.entidad}`);
-        finalizarImputacion();
-      } catch (error) {
-        console.error(error);
-        toast.error((error as Error).message || "No se pudo imputar el cheque");
-      }
+      toast.success(`Cheque imputado a ${empresa.entidad}`);
+      finalizarImputacion();
     }
 
     // ESCENARIO B: CLIENTE
@@ -207,22 +200,13 @@ export function CheckManagement() {
           : c,
       );
 
-      try {
-        await Promise.all(
-          updatedCheques.map((c) => dataRepository.saveCheque(c)),
-        );
-        await Promise.all(
-          updatedOrdenes.map((o) => dataRepository.saveOrdenTrabajo(o)),
-        );
-        setCheques(updatedCheques);
-        setOrdenesTrabajo(updatedOrdenes);
+      await Promise.all(updatedCheques.map((c) => dataRepository.saveCheque(c)));
+      await Promise.all(updatedOrdenes.map((o) => dataRepository.saveOrdenTrabajo(o)));
+      setCheques(updatedCheques);
+      setOrdenesTrabajo(updatedOrdenes);
 
-        toast.success(`Imputado a ${clienteSeleccionado.cliente}`);
-        finalizarImputacion();
-      } catch (error) {
-        console.error(error);
-        toast.error((error as Error).message || "No se pudo imputar el cheque");
-      }
+      toast.success(`Imputado a ${clienteSeleccionado.cliente}`);
+      finalizarImputacion();
     }
   };
 
@@ -236,43 +220,26 @@ export function CheckManagement() {
 
   // --- CRUD Básico ---
   const handleCreateCheque = async (data: any) => {
-    try {
-      const newCheque = { ...data, id: crypto.randomUUID() };
-      await dataRepository.saveCheque(newCheque);
-      setCheques([...cheques, newCheque]);
-      setShowForm(false);
-      toast.success("Cheque registrado");
-    } catch (error) {
-      console.error(error);
-      toast.error((error as Error).message || "No se pudo registrar el cheque");
-    }
+    const newCheque = { ...data, id: crypto.randomUUID() };
+    await dataRepository.saveCheque(newCheque);
+    setCheques([...cheques, newCheque]);
+    setShowForm(false);
+    toast.success("Cheque registrado");
   };
 
   const handleUpdateCheque = async (data: any) => {
-    try {
-      await dataRepository.saveCheque(data);
-      setCheques(cheques.map((c) => (c.id === data.id ? data : c)));
-      setShowForm(false);
-      setEditingCheque(undefined);
-      toast.success("Cheque actualizado");
-    } catch (error) {
-      console.error(error);
-      toast.error(
-        (error as Error).message || "No se pudo actualizar el cheque",
-      );
-    }
+    await dataRepository.saveCheque(data);
+    setCheques(cheques.map((c) => (c.id === data.id ? data : c)));
+    setShowForm(false);
+    setEditingCheque(undefined);
+    toast.success("Cheque actualizado");
   };
 
   const handleDeleteCheque = async (id: string) => {
-    try {
-      await dataRepository.deleteCheque(id);
-      setCheques(cheques.filter((c) => c.id !== id));
-      setShowDetailModal(false);
-      toast.success("Cheque eliminado");
-    } catch (error) {
-      console.error(error);
-      toast.error((error as Error).message || "No se pudo eliminar el cheque");
-    }
+    await dataRepository.deleteCheque(id);
+    setCheques(cheques.filter((c) => c.id !== id));
+    setShowDetailModal(false);
+    toast.success("Cheque eliminado");
   };
 
   // --- Helpers UI ---
