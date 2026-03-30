@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router";
 import { useState, useEffect } from "react";
 import {
   Car,
@@ -11,6 +11,8 @@ import {
   RefreshCw,
   Menu,
   BookOpen,
+  MonitorPlay,
+  Clapperboard,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { toast } from "sonner";
@@ -28,9 +30,18 @@ import {
 } from "./ui/sheet";
 
 export function Layout({ children }: { children: React.ReactNode }) {
+  const PRESENTATION_MODE_KEY = "taller_pro_demo_presentation_mode";
   const location = useLocation();
+  const navigate = useNavigate();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+  const [isPresentationMode, setIsPresentationMode] = useState(() => {
+    try {
+      return localStorage.getItem(PRESENTATION_MODE_KEY) === "true";
+    } catch {
+      return false;
+    }
+  });
   const { open: guideOpen, show: showGuide, close: closeGuide } = useOnboardingGuide();
 
   useEffect(() => {
@@ -78,6 +89,25 @@ export function Layout({ children }: { children: React.ReactNode }) {
   ];
 
   const showRefreshButton = location.pathname !== "/gestion-financiera";
+
+  const togglePresentationMode = () => {
+    setIsPresentationMode((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem(PRESENTATION_MODE_KEY, String(next));
+      } catch {
+        // noop if storage unavailable
+      }
+
+      if (next) {
+        toast.success("Modo presentación activado");
+      } else {
+        toast.success("Modo presentación desactivado");
+      }
+
+      return next;
+    });
+  };
 
   const handleRefreshData = async () => {
     if (isRefreshing) return;
@@ -175,23 +205,35 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 </Sheet>
               </div>
 
-              {/* Tour Button */}
               <Button
-                variant="ghost"
+                variant={isPresentationMode ? "default" : "outline"}
                 size="sm"
                 className="gap-2"
-                onClick={showGuide}
-                title="Ver guía de uso"
-                data-tour="tour-open-button"
+                onClick={togglePresentationMode}
+                title="Activar/desactivar modo presentación"
               >
-                <BookOpen className="h-4 w-4" />
-                <span className="hidden sm:inline">Tour</span>
+                <MonitorPlay className="h-4 w-4" />
+                <span className="hidden sm:inline">Presentación</span>
               </Button>
 
-              {/* Help Button */}
-              <HelpGuide />
+              {!isPresentationMode && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="gap-2"
+                  onClick={showGuide}
+                  title="Ver guía de uso"
+                  data-tour="tour-open-button"
+                >
+                  <BookOpen className="h-4 w-4" />
+                  <span className="hidden sm:inline">Tour</span>
+                </Button>
+              )}
 
-              {showRefreshButton && (
+              {/* Help Button */}
+              {!isPresentationMode && <HelpGuide />}
+
+              {showRefreshButton && !isPresentationMode && (
                 <Button
                   variant="outline"
                   size="sm"
@@ -210,7 +252,27 @@ export function Layout({ children }: { children: React.ReactNode }) {
         </div>
       </nav>
       <OnboardingGuide open={guideOpen} onClose={closeGuide} />
-      <WelcomeBanner />
+      {isPresentationMode ? (
+        <div className="border-b border-cyan-100 bg-gradient-to-r from-cyan-50 to-sky-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <div className="flex items-center gap-2 text-cyan-800 text-sm font-medium">
+              <Clapperboard className="h-4 w-4" />
+              Demostración en vivo: Vehículo - Orden - Búsqueda - Finanzas -
+              Implementación.
+            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              className="border-cyan-300 text-cyan-800 hover:bg-cyan-100"
+              onClick={() => navigate("/ordenes")}
+            >
+              Ver Flujo en Vivo
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <WelcomeBanner />
+      )}
       <main className="max-w-7xl mx-auto py-4 sm:py-6 px-4 sm:px-6 lg:px-8">
         {children}
       </main>

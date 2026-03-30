@@ -224,8 +224,9 @@ export function Dashboard() {
   }, [currentPage, totalPages]);
 
   const demoWhatsAppMessage = encodeURIComponent(
-    "Hola, quiero una presentación comercial de Taller PRO para mi taller.",
+    "Hola, quiero implementar Taller PRO en mi taller. Me interesa precio y tiempos de implementación.",
   );
+  const whatsappNumber = "2644457616";
 
   return (
     <div className="px-4 sm:px-0">
@@ -240,13 +241,13 @@ export function Dashboard() {
           </div>
 
           <h1 className="text-3xl sm:text-4xl font-bold mb-3 leading-tight">
-            Mostrá resultados en 5 minutos, no promesas
+            Su taller más ordenado, rentable y profesional
           </h1>
 
           <p className="text-cyan-50/95 max-w-3xl text-sm sm:text-base">
-            Registrá un vehículo, creá una orden y enseñá control financiero en
-            tiempo real. Este flujo está preparado para cerrar reuniones de
-            venta en vivo.
+            Centralice vehículos, órdenes y cobros en una sola plataforma. Esta
+            demo en vivo le muestra cómo mejorar control y productividad desde
+            la primera semana.
           </p>
 
           <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -268,13 +269,13 @@ export function Dashboard() {
               className="justify-between bg-emerald-500 hover:bg-emerald-400 text-white"
               onClick={() =>
                 window.open(
-                  `https://wa.me/?text=${demoWhatsAppMessage}`,
+                  `https://wa.me/${whatsappNumber}?text=${demoWhatsAppMessage}`,
                   "_blank",
                   "noopener,noreferrer",
                 )
               }
             >
-              Cerrar por WhatsApp
+              Quiero esta Solución
               <ArrowRight className="h-4 w-4" />
             </Button>
           </div>

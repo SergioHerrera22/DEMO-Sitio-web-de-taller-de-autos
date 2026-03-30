@@ -5,7 +5,7 @@ import {
   Zap,
   Rocket,
   MessageCircle,
-  ClipboardCheck,
+  BadgeDollarSign,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { useState } from "react";
@@ -15,14 +15,11 @@ import { useNavigate } from "react-router";
 export function WelcomeBanner() {
   const [isVisible, setIsVisible] = useState(true);
   const navigate = useNavigate();
+  const whatsappNumber = "2644457616";
 
   const demoWhatsAppMessage = encodeURIComponent(
-    "Hola, vi la demo de Taller PRO y quiero implementarlo en mi taller.",
+    "Hola, me interesa implementar Taller PRO en mi taller. Quiero una propuesta comercial.",
   );
-
-  const handleOpenTour = () => {
-    window.dispatchEvent(new Event("app:startTour"));
-  };
 
   if (!isVisible) return null;
 
@@ -35,26 +32,26 @@ export function WelcomeBanner() {
           <Alert className="border-cyan-200 bg-white/90 backdrop-blur-sm shadow-sm">
             <Rocket className="h-5 w-5 text-cyan-700" />
             <AlertTitle className="text-lg font-bold text-gray-900 ml-2 flex items-center gap-2 flex-wrap">
-              <span>Demo Comercial Activa</span>
+              <span>Solución Comercial para Talleres</span>
               <span className="text-xs px-2 py-0.5 rounded-full bg-cyan-100 text-cyan-800 font-semibold">
-                LISTA PARA PRESENTAR
+                RESULTADOS DESDE EL DÍA 1
               </span>
             </AlertTitle>
             <AlertDescription className="ml-7 mt-3 space-y-3">
               <p className="text-sm text-gray-700 leading-relaxed">
-                Mostrá en pocos minutos cómo tu taller puede registrar
-                vehículos, crear órdenes, controlar pagos y tener métricas de
-                negocio en un solo lugar.
+                Con Taller PRO, su taller trabaja más ordenado: menos tiempo
+                administrativo, más control de cobros y una operación clara en
+                cada etapa del servicio.
               </p>
 
               <div className="flex flex-wrap gap-2">
                 <Button
                   size="sm"
                   className="bg-cyan-600 hover:bg-cyan-500 text-white gap-2"
-                  onClick={handleOpenTour}
+                  onClick={() => navigate("/ordenes")}
                 >
-                  <ClipboardCheck className="h-4 w-4" />
-                  Iniciar Tour de Venta
+                  <BadgeDollarSign className="h-4 w-4" />
+                  Ver Demo en Vivo
                 </Button>
                 <Button
                   size="sm"
@@ -62,7 +59,7 @@ export function WelcomeBanner() {
                   className="gap-2 border-cyan-300 text-cyan-800 hover:bg-cyan-50"
                   onClick={() => navigate("/ordenes")}
                 >
-                  Ver Órdenes en Vivo
+                  Ver Flujo de Órdenes
                 </Button>
                 <Button
                   size="sm"
@@ -70,14 +67,14 @@ export function WelcomeBanner() {
                   className="gap-2 border-green-300 text-green-800 hover:bg-green-50"
                   onClick={() =>
                     window.open(
-                      `https://wa.me/?text=${demoWhatsAppMessage}`,
+                      `https://wa.me/${whatsappNumber}?text=${demoWhatsAppMessage}`,
                       "_blank",
                       "noopener,noreferrer",
                     )
                   }
                 >
                   <MessageCircle className="h-4 w-4" />
-                  Contactar por WhatsApp
+                  Solicitar Propuesta
                 </Button>
               </div>
 
@@ -131,8 +128,8 @@ export function WelcomeBanner() {
               </div>
 
               <p className="text-xs text-gray-600 pt-2">
-                Presentación sugerida: Tour guiado - Registrar Vehículo - Crear
-                OT - Buscar OT - Mostrar Finanzas.
+                Esta demostración está orientada a mostrar ahorro de tiempo,
+                control financiero y mejora operativa para su taller.
               </p>
             </AlertDescription>
           </Alert>
