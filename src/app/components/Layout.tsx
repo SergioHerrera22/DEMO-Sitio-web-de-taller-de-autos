@@ -14,6 +14,8 @@ import {
 import { Button } from "./ui/button";
 import { toast } from "sonner";
 import { sync } from "../../services/syncEngine";
+import { HelpGuide } from "./HelpGuide";
+import { WelcomeBanner } from "./WelcomeBanner";
 import {
   Sheet,
   SheetContent,
@@ -138,6 +140,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 </Sheet>
               </div>
 
+              {/* Help Button */}
+              <HelpGuide />
+
               {showRefreshButton && (
                 <Button
                   variant="outline"
@@ -156,6 +161,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </div>
         </div>
       </nav>
+      <WelcomeBanner />
       <main className="max-w-7xl mx-auto py-4 sm:py-6 px-4 sm:px-6 lg:px-8">
         {children}
       </main>

@@ -131,8 +131,37 @@ npm run build
 ## Seguridad y Accesos
 
 - El modulo de Gestion Financiera usa validacion por contrasena en la interfaz.
-- Valor actual en codigo: taller2024.
+- **Clave del Sector Finanzas: `1234`**
 - Recomendacion: externalizar la contrasena a una variable de entorno o a un mecanismo de autenticacion formal.
+
+## Guía de Accesibilidad para Usuarios
+
+La aplicación incluye una **guía interactiva completa** accesible desde el botón "Ayuda" en la esquina superior derecha de la interfaz.
+
+### Características de Accesibilidad
+
+- **Banner de Bienvenida**: Al ingresar, se muestra un resumen con:
+  - Información sobre almacenamiento local
+  - Límites de la versión demo
+  - Clave de acceso al sector finanzas
+  
+- **Guía Detallada (Botón Ayuda)**: Contiene instrucciones paso a paso para:
+  - Dashboard / Inicio
+  - Órdenes de Trabajo
+  - Gestión de Vehículos
+  - Cuentas Corrientes
+  - Cheques
+  - Lavados
+  - Gestión Financiera (con clave: 1234)
+  
+- **Tips Útiles**: Consejos prácticos sobre actualización de datos, backups y sincronización
+
+### Almacenamiento 100% Local
+
+✓ Todos los datos se almacenan **en el navegador del cliente** (IndexedDB)
+✓ **Sin conexión a servidores remotos** - máxima privacidad
+✓ Funciona **sin conexión a internet** después de la carga inicial
+✓ Sincronización automática cada minuto
 
 ## Estructura del Proyecto
 
