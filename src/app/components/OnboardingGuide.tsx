@@ -29,6 +29,7 @@ interface Step {
   route?: string;
   selector?: string;
   requiredAction?: StepAction;
+  requiredSelectors?: string[];
   autoAdvance?: boolean;
 }
 
@@ -60,8 +61,11 @@ const STEPS: Step[] = [
     bg: "bg-indigo-500/20",
     title: "Patente del vehículo",
     text: "Perfecto. Ahora completá la patente en este campo.",
-    hint: "Ejemplo: ABC123. Puedes seguir con Continuar cuando quieras.",
+    hint: "Ejemplo: ABC123. Cuando la completes, avanzo automáticamente.",
     selector: '[data-tour="vehicle-form-patente"]',
+    requiredAction: "input",
+    requiredSelectors: ['[data-tour="vehicle-form-patente"]'],
+    autoAdvance: true,
   },
   {
     icon: Car,
@@ -71,6 +75,12 @@ const STEPS: Step[] = [
     text: "Completá el nombre del cliente y su teléfono para asociar correctamente el vehículo.",
     hint: "Mientras más completo el alta, mejor será la gestión posterior.",
     selector: '[data-tour="vehicle-form-cliente"]',
+    requiredAction: "input",
+    requiredSelectors: [
+      '[data-tour="vehicle-form-cliente"]',
+      '[data-tour="vehicle-form-telefono"]',
+    ],
+    autoAdvance: true,
   },
   {
     icon: Car,
@@ -112,6 +122,9 @@ const STEPS: Step[] = [
     text: "En la orden, indicá quién hará el trabajo en el campo Técnico.",
     hint: "También puedes seleccionar el vehículo y fecha antes de guardar.",
     selector: '[data-tour="order-form-tecnico"]',
+    requiredAction: "input",
+    requiredSelectors: ['[data-tour="order-form-tecnico"]'],
+    autoAdvance: true,
   },
   {
     icon: FileText,
@@ -121,6 +134,9 @@ const STEPS: Step[] = [
     text: "Escribí una descripción clara del trabajo a realizar o realizado.",
     hint: "Esto impacta en la trazabilidad y en la impresión del comprobante.",
     selector: '[data-tour="order-form-descripcion"]',
+    requiredAction: "input",
+    requiredSelectors: ['[data-tour="order-form-descripcion"]'],
+    autoAdvance: true,
   },
   {
     icon: FileText,
@@ -171,6 +187,9 @@ const STEPS: Step[] = [
     text: "Ingresá el nombre de la entidad, por ejemplo un banco o proveedor.",
     hint: "Después puedes guardar con el botón Crear Cuenta.",
     selector: '[data-tour="cuentas-form-entidad"]',
+    requiredAction: "input",
+    requiredSelectors: ['[data-tour="cuentas-form-entidad"]'],
+    autoAdvance: true,
   },
   {
     icon: CreditCard,
@@ -280,6 +299,40 @@ export function OnboardingGuide({ open, onClose }: OnboardingGuideProps) {
     localStorage.setItem(ONBOARDING_KEY, "true");
   };
 
+  const getActionTargets = useCallback((stepData: Step): HTMLElement[] => {
+    const selectors =
+      stepData.requiredSelectors && stepData.requiredSelectors.length > 0
+        ? stepData.requiredSelectors
+        : stepData.selector
+          ? [stepData.selector]
+          : [];
+
+    return selectors
+      .map((selector) => document.querySelector(selector))
+      .filter((el): el is HTMLElement => el instanceof HTMLElement);
+  }, []);
+
+  const areInputTargetsFilled = useCallback(
+    (stepData: Step) => {
+      const targets = getActionTargets(stepData);
+      if (targets.length === 0) return false;
+
+      return targets.every((el) => {
+        if (
+          el instanceof HTMLInputElement ||
+          el instanceof HTMLTextAreaElement ||
+          el instanceof HTMLSelectElement
+        ) {
+          return el.value.trim().length > 0;
+        }
+
+        const value = el.getAttribute("value") || "";
+        return value.trim().length > 0;
+      });
+    },
+    [getActionTargets],
+  );
+
   const closeGuide = () => {
     setCompleted();
     onClose();
@@ -351,12 +404,35 @@ export function OnboardingGuide({ open, onClose }: OnboardingGuideProps) {
   useEffect(() => {
     if (!open || !targetEl || !current.requiredAction) return;
 
-    const eventName = current.requiredAction === "click" ? "click" : "input";
-    const handler = () => setActionDone(true);
+    const targets = getActionTargets(current);
+    if (targets.length === 0) return;
 
-    targetEl.addEventListener(eventName, handler);
-    return () => targetEl.removeEventListener(eventName, handler);
-  }, [current.requiredAction, open, targetEl]);
+    if (current.requiredAction === "click") {
+      const clickHandler = () => setActionDone(true);
+      targets.forEach((el) => el.addEventListener("click", clickHandler));
+
+      return () => {
+        targets.forEach((el) => el.removeEventListener("click", clickHandler));
+      };
+    }
+
+    const evaluate = () => {
+      setActionDone(areInputTargetsFilled(current));
+    };
+
+    evaluate();
+    targets.forEach((el) => {
+      el.addEventListener("input", evaluate);
+      el.addEventListener("change", evaluate);
+    });
+
+    return () => {
+      targets.forEach((el) => {
+        el.removeEventListener("input", evaluate);
+        el.removeEventListener("change", evaluate);
+      });
+    };
+  }, [areInputTargetsFilled, current, current.requiredAction, getActionTargets, open, targetEl]);
 
   useEffect(() => {
     if (!open) return;
