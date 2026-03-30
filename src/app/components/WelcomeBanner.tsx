@@ -1,24 +1,86 @@
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
-import { AlertCircle, Lock, Zap } from "lucide-react";
+import {
+  AlertCircle,
+  Lock,
+  Zap,
+  Rocket,
+  MessageCircle,
+  ClipboardCheck,
+} from "lucide-react";
 import { Button } from "./ui/button";
 import { useState } from "react";
 import { X } from "lucide-react";
+import { useNavigate } from "react-router";
 
 export function WelcomeBanner() {
   const [isVisible, setIsVisible] = useState(true);
+  const navigate = useNavigate();
+
+  const demoWhatsAppMessage = encodeURIComponent(
+    "Hola, vi la demo de Taller PRO y quiero implementarlo en mi taller.",
+  );
+
+  const handleOpenTour = () => {
+    window.dispatchEvent(new Event("app:startTour"));
+  };
 
   if (!isVisible) return null;
 
   return (
-    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-200 px-4 sm:px-6 lg:px-8 py-4">
+    <div className="relative border-b border-blue-200/70 px-4 sm:px-6 lg:px-8 py-4 bg-gradient-to-r from-sky-100 via-cyan-50 to-blue-100 overflow-hidden">
+      <div className="absolute -top-20 -right-16 h-52 w-52 rounded-full bg-cyan-300/25 blur-2xl" />
+      <div className="absolute -bottom-20 -left-16 h-52 w-52 rounded-full bg-blue-400/20 blur-2xl" />
       <div className="max-w-7xl mx-auto">
         <div className="relative">
-          <Alert className="border-blue-300 bg-white">
-            <AlertCircle className="h-5 w-5 text-blue-600" />
-            <AlertTitle className="text-lg font-bold text-gray-900 ml-2">
-              👋 ¡Bienvenido a Taller PRO Demo!
+          <Alert className="border-cyan-200 bg-white/90 backdrop-blur-sm shadow-sm">
+            <Rocket className="h-5 w-5 text-cyan-700" />
+            <AlertTitle className="text-lg font-bold text-gray-900 ml-2 flex items-center gap-2 flex-wrap">
+              <span>Demo Comercial Activa</span>
+              <span className="text-xs px-2 py-0.5 rounded-full bg-cyan-100 text-cyan-800 font-semibold">
+                LISTA PARA PRESENTAR
+              </span>
             </AlertTitle>
             <AlertDescription className="ml-7 mt-3 space-y-3">
+              <p className="text-sm text-gray-700 leading-relaxed">
+                Mostrá en pocos minutos cómo tu taller puede registrar
+                vehículos, crear órdenes, controlar pagos y tener métricas de
+                negocio en un solo lugar.
+              </p>
+
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  size="sm"
+                  className="bg-cyan-600 hover:bg-cyan-500 text-white gap-2"
+                  onClick={handleOpenTour}
+                >
+                  <ClipboardCheck className="h-4 w-4" />
+                  Iniciar Tour de Venta
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="gap-2 border-cyan-300 text-cyan-800 hover:bg-cyan-50"
+                  onClick={() => navigate("/ordenes")}
+                >
+                  Ver Órdenes en Vivo
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="gap-2 border-green-300 text-green-800 hover:bg-green-50"
+                  onClick={() =>
+                    window.open(
+                      `https://wa.me/?text=${demoWhatsAppMessage}`,
+                      "_blank",
+                      "noopener,noreferrer",
+                    )
+                  }
+                >
+                  <MessageCircle className="h-4 w-4" />
+                  Contactar por WhatsApp
+                </Button>
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                 {/* Info Box 1 */}
                 <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
@@ -69,8 +131,8 @@ export function WelcomeBanner() {
               </div>
 
               <p className="text-xs text-gray-600 pt-2">
-                ℹ️ Usa el botón <strong>Ayuda</strong> en la esquina superior
-                derecha para ver la guía completa de uso.
+                Presentación sugerida: Tour guiado - Registrar Vehículo - Crear
+                OT - Buscar OT - Mostrar Finanzas.
               </p>
             </AlertDescription>
           </Alert>

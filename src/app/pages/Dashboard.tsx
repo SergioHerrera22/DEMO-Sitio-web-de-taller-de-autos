@@ -15,7 +15,17 @@ import {
 
 import { VehicleForm } from "../components/VehicleForm";
 
-import { Search, Plus, Car, FileText, Edit2, Trash2 } from "lucide-react";
+import {
+  Search,
+  Plus,
+  Car,
+  FileText,
+  Edit2,
+  Trash2,
+  Sparkles,
+  ArrowRight,
+  Wallet,
+} from "lucide-react";
 import { toast } from "sonner";
 import { createId } from "../../utils";
 import { dataRepository } from "../../services/dataRepository";
@@ -213,15 +223,117 @@ export function Dashboard() {
     }
   }, [currentPage, totalPages]);
 
+  const demoWhatsAppMessage = encodeURIComponent(
+    "Hola, quiero una presentación comercial de Taller PRO para mi taller.",
+  );
+
   return (
     <div className="px-4 sm:px-0">
-      <div className="mb-8">
-        <h1 className="text-3xl font-semibold text-gray-900 mb-2">
-          Sistema de Gestión del Taller
-        </h1>
-        <p className="text-gray-600">
-          Busque vehículos por patente o registre uno nuevo
-        </p>
+      <div className="mb-8 rounded-2xl border border-sky-200 bg-gradient-to-r from-sky-600 via-cyan-600 to-blue-700 p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
+        <div className="absolute -top-16 -right-14 h-44 w-44 rounded-full bg-white/15 blur-2xl" />
+        <div className="absolute -bottom-16 -left-12 h-40 w-40 rounded-full bg-cyan-200/20 blur-2xl" />
+
+        <div className="relative z-10">
+          <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold tracking-wide mb-4">
+            <Sparkles className="h-3.5 w-3.5" />
+            DEMO COMERCIAL
+          </div>
+
+          <h1 className="text-3xl sm:text-4xl font-bold mb-3 leading-tight">
+            Mostrá resultados en 5 minutos, no promesas
+          </h1>
+
+          <p className="text-cyan-50/95 max-w-3xl text-sm sm:text-base">
+            Registrá un vehículo, creá una orden y enseñá control financiero en
+            tiempo real. Este flujo está preparado para cerrar reuniones de
+            venta en vivo.
+          </p>
+
+          <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-3">
+            <Button
+              className="justify-between bg-white text-cyan-700 hover:bg-cyan-50"
+              onClick={handleOpenCreateVehicle}
+            >
+              Registrar Vehículo
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+            <Button
+              className="justify-between bg-slate-900/35 border border-white/25 hover:bg-slate-900/55"
+              onClick={() => navigate("/ordenes")}
+            >
+              Crear Orden de Trabajo
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+            <Button
+              className="justify-between bg-emerald-500 hover:bg-emerald-400 text-white"
+              onClick={() =>
+                window.open(
+                  `https://wa.me/?text=${demoWhatsAppMessage}`,
+                  "_blank",
+                  "noopener,noreferrer",
+                )
+              }
+            >
+              Cerrar por WhatsApp
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <Card className="border-sky-100 bg-sky-50/70">
+          <CardContent className="pt-6">
+            <p className="text-xs uppercase tracking-wide text-sky-700 font-semibold mb-2">
+              Vehículos activos
+            </p>
+            <p className="text-3xl font-bold text-sky-900">{vehicles.length}</p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-orange-100 bg-orange-50/70">
+          <CardContent className="pt-6">
+            <p className="text-xs uppercase tracking-wide text-orange-700 font-semibold mb-2">
+              Deuda proveedores
+            </p>
+            <p className="text-3xl font-bold text-orange-900">
+              ${Math.abs(deudaCuentasCorrientes).toFixed(0)}
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-rose-100 bg-rose-50/70">
+          <CardContent className="pt-6">
+            <p className="text-xs uppercase tracking-wide text-rose-700 font-semibold mb-2">
+              Egresos acumulados
+            </p>
+            <p className="text-3xl font-bold text-rose-900">
+              ${egresosTotales.toFixed(0)}
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-emerald-100 bg-emerald-50/80">
+          <CardContent className="pt-6 flex items-center justify-between gap-2">
+            <div>
+              <p className="text-xs uppercase tracking-wide text-emerald-700 font-semibold mb-2">
+                Próximo paso
+              </p>
+              <p className="text-sm font-semibold text-emerald-900">
+                Mostrar Finanzas
+              </p>
+            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              className="border-emerald-300 text-emerald-700 hover:bg-emerald-100"
+              onClick={() => navigate("/gestion-financiera")}
+            >
+              <Wallet className="h-4 w-4 mr-1" />
+              Ir
+            </Button>
+          </CardContent>
+        </Card>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">

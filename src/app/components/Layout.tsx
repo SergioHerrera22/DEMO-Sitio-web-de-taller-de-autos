@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Car,
   Home,
@@ -32,6 +32,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const { open: guideOpen, show: showGuide, close: closeGuide } = useOnboardingGuide();
+
+  useEffect(() => {
+    const openTour = () => showGuide();
+    window.addEventListener("app:startTour", openTour);
+    return () => window.removeEventListener("app:startTour", openTour);
+  }, [showGuide]);
 
   const isActive = (path: string) => {
     return location.pathname === path;

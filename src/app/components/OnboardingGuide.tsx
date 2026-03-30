@@ -76,10 +76,7 @@ const STEPS: Step[] = [
     hint: "Mientras más completo el alta, mejor será la gestión posterior.",
     selector: '[data-tour="vehicle-form-cliente"]',
     requiredAction: "input",
-    requiredSelectors: [
-      '[data-tour="vehicle-form-cliente"]',
-      '[data-tour="vehicle-form-telefono"]',
-    ],
+    requiredSelectors: ['[data-tour="vehicle-form-cliente"]'],
     autoAdvance: true,
   },
   {
@@ -88,10 +85,9 @@ const STEPS: Step[] = [
     bg: "bg-indigo-500/20",
     title: "Guardar vehículo",
     text: "Cuando termines, presioná Registrar Vehículo para crear el registro.",
-    hint: "Al crearlo, podrás usarlo en órdenes de trabajo.",
+    hint: "Cuando se guarde, usa Continuar para pasar al siguiente módulo.",
     selector: '[data-tour="vehicle-form-submit"]',
     requiredAction: "click",
-    autoAdvance: true,
   },
   {
     icon: FileText,
@@ -432,7 +428,14 @@ export function OnboardingGuide({ open, onClose }: OnboardingGuideProps) {
         el.removeEventListener("change", evaluate);
       });
     };
-  }, [areInputTargetsFilled, current, current.requiredAction, getActionTargets, open, targetEl]);
+  }, [
+    areInputTargetsFilled,
+    current,
+    current.requiredAction,
+    getActionTargets,
+    open,
+    targetEl,
+  ]);
 
   useEffect(() => {
     if (!open) return;
